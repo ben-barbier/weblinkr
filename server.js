@@ -2,6 +2,8 @@
 
 const Hapi = require('hapi');
 
+const links = [];
+
 // Create a server with a host and port
 const server = new Hapi.Server();
 server.connection({
@@ -10,13 +12,20 @@ server.connection({
 });
 
 // Add the route
-server.route({
+server.route([{
     method: 'GET',
-    path:'/hello',
+    path: '/links',
     handler: function (request, reply) {
-        return reply('hello world');
+        return reply(links);
     }
-});
+}, {
+    method: 'POST',
+    path: '/links',
+    handler: function (request, reply) {
+        links.push(request.payload);
+        return reply();
+    }
+}]);
 
 // Start the server
 server.start((err) => {
