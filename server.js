@@ -1,6 +1,14 @@
 'use strict';
 
 const Hapi = require('hapi');
+const Joi = require('joi');
+
+const linkSchema = Joi.object({
+    title: Joi.string().required(),
+    url: Joi.string().uri().required(),
+    description: Joi.string().allow(''),
+    tags: Joi.array().required().items(Joi.string()).min(1).unique()
+});
 
 const links = [];
 
@@ -17,6 +25,11 @@ server.route([{
     path: '/links',
     handler: function (request, reply) {
         return reply(links);
+    },
+    config: {
+        response: {
+            schema: Joi.array().items(linkSchema)
+        }
     }
 }, {
     method: 'POST',
@@ -24,6 +37,11 @@ server.route([{
     handler: function (request, reply) {
         links.push(request.payload);
         return reply();
+    },
+    config: {
+        validate: {
+            payload: linkSchema
+        }
     }
 }]);
 
