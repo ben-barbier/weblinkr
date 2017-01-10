@@ -1,22 +1,26 @@
 {
-  "name": "weblinkr-server",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ben-barbier/weblinkr-server.git"
-  },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/ben-barbier/weblinkr-server/issues"
-  },
-  "homepage": "https://github.com/ben-barbier/weblinkr-server#readme",
-  "dependencies": {
-    "hapi": "16.1.0"
-  }
+    "name": "weblinkr-server",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "start": "nodemon server.js",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/ben-barbier/weblinkr-server.git"
+    },
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/ben-barbier/weblinkr-server/issues"
+    },
+    "homepage": "https://github.com/ben-barbier/weblinkr-server#readme",
+    "dependencies": {
+        "hapi": "16.1.0"
+    },
+    "devDependencies": {
+        "nodemon": "1.11.0"
+    }
 }
