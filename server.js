@@ -17,7 +17,14 @@ const linkSchema = Joi.object({
 const links = [];
 
 // Create a server with a host and port
-const server = new Hapi.Server();
+const server = new Hapi.Server({
+    connections: {
+        routes: {
+            cors: true
+        }
+    }
+});
+
 server.connection({
     host: 'localhost',
     port: 8000
