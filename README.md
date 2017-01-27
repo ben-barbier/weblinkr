@@ -3,8 +3,12 @@
 ## Usage
 
 ```bash
-npm start
+MONGO_URI=<uri> PORT=<port> npm run serve
 ```
+
+Replace 
+- ```<uri>``` by: mongodb://```<dbuser>```:```<dbpassword>```@```<dbhost>```:```<dbport>```/```<dbname>```
+- ```<port>``` by the http application port
 
 ## Swagger
 

@@ -2,10 +2,23 @@
 
 const Hapi = require('hapi');
 const Joi = require('joi');
+
+// Swagger
 const Inert = require('inert');
 const Vision = require('vision');
 const HapiSwagger = require('hapi-swagger');
 const Pack = require('./package');
+
+// Database
+const mongodb = require('mongodb').MongoClient;
+const assert = require('assert');
+
+let links;
+mongodb.connect(process.env.MONGO_URI, function init(error, db) {
+    assert.equal(null, error);
+    console.log("Connected successfully to database");
+    links = db.collection('links');
+});
 
 const linkSchema = Joi.object({
     title: Joi.string().required(),
@@ -13,8 +26,6 @@ const linkSchema = Joi.object({
     description: Joi.string().allow(''),
     tags: Joi.array().required().items(Joi.string()).min(1).unique()
 });
-
-const links = [];
 
 // Create a server with a host and port
 const server = new Hapi.Server({
@@ -26,8 +37,8 @@ const server = new Hapi.Server({
 });
 
 server.connection({
-    host: 'localhost',
-    port: 8000
+    host: '0.0.0.0',
+    port: process.env.PORT
 });
 
 // Add the route
@@ -35,7 +46,9 @@ server.route([{
     method: 'GET',
     path: '/links',
     handler: function (request, reply) {
-        return reply(links);
+        return links.find({}, {_id: 0}).toArray(function (err, docs) {
+            reply(docs);
+        });
     },
     config: {
         tags: ['api'],
@@ -47,7 +60,7 @@ server.route([{
     method: 'POST',
     path: '/links',
     handler: function (request, reply) {
-        links.push(request.payload);
+        links.insert(request.payload);
         return reply();
     },
     config: {
