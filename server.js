@@ -11,6 +11,7 @@ const Pack = require('./package');
 
 // Database
 const mongodb = require('mongodb').MongoClient;
+const ObjectId = require('mongodb').ObjectId;
 const assert = require('assert');
 
 let links;
@@ -21,6 +22,7 @@ mongodb.connect(process.env.MONGO_URI, function init(error, db) {
 });
 
 const linkSchema = Joi.object({
+    _id: Joi.string(),
     title: Joi.string().required(),
     url: Joi.string().uri().required(),
     description: Joi.string().allow(''),
@@ -46,8 +48,11 @@ server.route([{
     method: 'GET',
     path: '/links',
     handler: function (request, reply) {
-        return links.find({}, {_id: 0}).toArray(function (err, docs) {
-            reply(docs);
+        return links.find({}).toArray(function (err, docs) {
+            reply(docs.map((doc) => {
+                doc._id = doc._id.toString();
+                return doc;
+            }));
         });
     },
     config: {
@@ -57,10 +62,41 @@ server.route([{
         }
     }
 }, {
+    method: 'GET',
+    path: '/links/{linkId}',
+    handler: function (request, reply) {
+        return links.findOne({_id: ObjectId(request.params.linkId)}, (err, doc) => {
+            doc._id = doc._id.toString();
+            reply(doc);
+        });
+    },
+    config: {
+        tags: ['api'],
+        response: {
+            schema: linkSchema
+        }
+    }
+}, {
     method: 'POST',
     path: '/links',
     handler: function (request, reply) {
-        links.insert(request.payload);
+        let newLink = request.payload;
+        return links.insert(newLink, () => {
+            return reply(newLink);
+        });
+    },
+    config: {
+        tags: ['api'],
+        validate: {
+            payload: linkSchema
+        }
+    }
+}, {
+    method: 'PUT',
+    path: '/links/{linkId}',
+    handler: function (request, reply) {
+        request.payload._id = ObjectId(request.params.linkId);
+        links.save(request.payload);
         return reply();
     },
     config: {
@@ -68,6 +104,16 @@ server.route([{
         validate: {
             payload: linkSchema
         }
+    }
+}, {
+    method: 'DELETE',
+    path: '/links/{linkId}',
+    handler: function (request, reply) {
+        links.remove({_id: ObjectId(request.params.linkId)});
+        return reply();
+    },
+    config: {
+        tags: ['api']
     }
 }]);
 
