@@ -14,11 +14,11 @@ const mongodb = require('mongodb').MongoClient;
 const ObjectId = require('mongodb').ObjectId;
 const assert = require('assert');
 
-let links;
+let dbLinks;
 mongodb.connect(process.env.MONGO_URI, function init(error, db) {
     assert.equal(null, error);
     console.log("Connected successfully to database");
-    links = db.collection('links');
+    dbLinks = db.collection('links');
 });
 
 const linkSchema = Joi.object({
@@ -48,10 +48,10 @@ server.route([{
     method: 'GET',
     path: '/links',
     handler: function (request, reply) {
-        return links.find({}).toArray(function (err, docs) {
-            return reply(docs.map((doc) => {
-                doc._id = doc._id.toString();
-                return doc;
+        return dbLinks.find({}).toArray().then((links) => {
+            return reply(links.map((link) => {
+                link._id = link._id.toString();
+                return link;
             }));
         });
     },
@@ -65,14 +65,14 @@ server.route([{
     method: 'GET',
     path: '/links/{linkId}',
     handler: function (request, reply) {
-        /**
-         * FIXME: Si le linkId n'existe pas, l'application retourne une erreur 500
-         * J'ai même fait planté l'application après avoir recherché un link après l'avoir supprimé
-         * (20/03/2017) Ben.
-         */
-        return links.findOne({_id: ObjectId(request.params.linkId)}, (err, doc) => {
-            doc._id = doc._id.toString();
-            return reply(doc);
+        if (!ObjectId.isValid(request.params.linkId)) {
+            return reply('Link not found').code(404);
+        }
+        return dbLinks.findOne({_id: ObjectId(request.params.linkId)}).then((link) => {
+            link._id = link._id.toString();
+            return reply(link);
+        }).catch(() => {
+            return reply('Link not found').code(404);
         });
     },
     config: {
@@ -86,9 +86,8 @@ server.route([{
     path: '/links',
     handler: function (request, reply) {
         let newLink = request.payload;
-        return links.insert(newLink, () => {
-            return reply(newLink);
-        });
+        delete newLink._id;
+        return dbLinks.insert(newLink).then(reply(newLink));
     },
     config: {
         tags: ['api'],
@@ -101,8 +100,7 @@ server.route([{
     path: '/links/{linkId}',
     handler: function (request, reply) {
         request.payload._id = ObjectId(request.params.linkId);
-        links.save(request.payload);
-        return reply();
+        return dbLinks.save(request.payload).then(reply());
     },
     config: {
         tags: ['api'],
@@ -114,8 +112,7 @@ server.route([{
     method: 'DELETE',
     path: '/links/{linkId}',
     handler: function (request, reply) {
-        links.remove({_id: ObjectId(request.params.linkId)});
-        return reply();
+        return dbLinks.remove({_id: ObjectId(request.params.linkId)}).then(reply());
     },
     config: {
         tags: ['api']
