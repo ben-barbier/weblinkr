@@ -65,6 +65,11 @@ server.route([{
     method: 'GET',
     path: '/links/{linkId}',
     handler: function (request, reply) {
+        /**
+         * FIXME: Si le linkId n'existe pas, l'application retourne une erreur 500
+         * J'ai même fait planté l'application après avoir recherché un link après l'avoir supprimé
+         * (20/03/2017) Ben.
+         */
         return links.findOne({_id: ObjectId(request.params.linkId)}, (err, doc) => {
             doc._id = doc._id.toString();
             reply(doc);
