@@ -49,7 +49,7 @@ server.route([{
     path: '/links',
     handler: function (request, reply) {
         return links.find({}).toArray(function (err, docs) {
-            reply(docs.map((doc) => {
+            return reply(docs.map((doc) => {
                 doc._id = doc._id.toString();
                 return doc;
             }));
@@ -72,7 +72,7 @@ server.route([{
          */
         return links.findOne({_id: ObjectId(request.params.linkId)}, (err, doc) => {
             doc._id = doc._id.toString();
-            reply(doc);
+            return reply(doc);
         });
     },
     config: {
